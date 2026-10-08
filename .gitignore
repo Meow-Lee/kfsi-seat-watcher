@@ -1,0 +1,7 @@
+config.json
+kakao_token.json
+state.json
+watcher.log
+__pycache__/
+kakao_token_receiver.json
+state/

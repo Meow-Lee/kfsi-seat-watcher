@@ -1,0 +1,22 @@
+{
+  "kakao": {
+    "rest_api_key": "여기에_REST_API_키",
+    "client_secret": "",
+    "redirect_uri": "http://localhost:8765/callback",
+    "receiver_uuids": []
+  },
+  "telegram": {
+    "bot_token": "",
+    "chat_id": ""
+  },
+  "target": {
+    "label": "소방안전관리자 1급 (혼용) 경기북부 운정",
+    "tcd": "21N",
+    "jibu_cd": "1141",
+    "region": "경기북부",
+    "place": "운정",
+    "start_date": "10.19"
+  },
+  "interval_sec": 300,
+  "deadline": "2026-10-18T23:59"
+}
