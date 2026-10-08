@@ -110,6 +110,7 @@ GitHub 자체 `schedule`(cron)도 워크플로에 넣어 두었습니다. 하지
 - 실행 기록은 저장소 **Actions** 탭이나 `gh run list -R Meow-Lee/kfsi-seat-watcher`로 봅니다.
   - cron-job.org가 실행한 것은 `workflow_dispatch`, GitHub 자체 cron이 실행한 것은 `schedule`로 표시됩니다.
 - 수동으로 한 번 실행하려면 `gh workflow run watch.yml -R Meow-Lee/kfsi-seat-watcher`를 씁니다.
+- **결원 알림 테스트**: `gh workflow run watch.yml -R Meow-Lee/kfsi-seat-watcher -f simulate_open=true`를 실행하면 `[테스트] 🚨 결원 발생!` 알림을 실제로 보냅니다. 감시 상태는 건드리지 않습니다. 웹에서는 Actions → Run workflow → 체크박스로 할 수 있습니다.
 - 실행이 안 쌓이면 cron-job.org의 작업 **History**에서 응답 코드를 봅니다.
   - `401`/`403`: 토큰 만료 또는 권한 부족
   - `404`: URL이나 워크플로 파일 이름이 틀림
