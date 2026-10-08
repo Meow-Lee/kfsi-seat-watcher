@@ -71,6 +71,9 @@ class Slot:
         seats = "?" if self.seats is None else f"{self.seats}명"
         return f"{self.place} {self.date} / 상태={self.label}(코드 {self.status_cd}) / 잔여 {seats}"
 
+    def short(self) -> str:
+        return f"{self.label}, 잔여 {'?' if self.seats is None else self.seats}명"
+
 
 def fetch(tcd: str) -> str:
     req = urllib.request.Request(GRID_URL.format(tcd=tcd), headers={
@@ -137,7 +140,8 @@ def tick(cfg: dict, notifiers: list, state: dict) -> bool:
     deadline = datetime.fromisoformat(cfg["deadline"])
     interval = int(cfg.get("interval_sec", 300))
 
-    def send(text: str, link: Optional[str] = None) -> None:
+    def send(text: str, link: Optional[str] = apply_url) -> None:
+        # 링크가 없으면 카카오가 등록 도메인 첫 화면(사이트 메인)으로 보내므로 모든 메시지에 신청 페이지를 건다
         if not notify_all(notifiers, text, link, log=log):
             log("  !! 모든 알림 채널 전송 실패")
 
@@ -160,21 +164,21 @@ def tick(cfg: dict, notifiers: list, state: dict) -> bool:
         if not state["started"]:
             state["started"] = True
             send(f"👀 결원 감시 시작 ({interval // 60}분 간격, {deadline:%m/%d %H:%M}까지)\n"
-                 f"{target['label']}\n현재: {slot.describe()}")
+                 f"{target['label']}\n현재: {slot.short()}")
         if status == "OPEN":
             if state["status"] != "OPEN":
                 state["open_alerts"] = 0
             if state["open_alerts"] < OPEN_ALERT_MAX:
-                send(open_message(slot, target), apply_url)
+                send(open_message(slot, target))
                 state["open_alerts"] += 1
         elif state["status"] == "OPEN":
-            send(f"🔒 다시 마감되었습니다.\n{slot.describe()}")
+            send(f"🔒 다시 마감되었습니다. ({slot.short()})")
         state["status"] = status
     except Exception as e:
         state["fails"] += 1
         log(f"확인 실패 ({state['fails']}회 연속): {e}")
         if state["fails"] == FAIL_ALERT_THRESHOLD:
-            send(f"⚠️ 사이트 확인이 {state['fails']}회 연속 실패했습니다.\n{e}\n직접 확인해 주세요.", apply_url)
+            send(f"⚠️ 사이트 확인이 {state['fails']}회 연속 실패했습니다.\n{e}\n직접 확인해 주세요.")
     STATE_PATH.write_text(json.dumps(state), "utf-8")
     return True
 

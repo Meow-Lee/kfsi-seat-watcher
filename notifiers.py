@@ -120,9 +120,9 @@ class KakaoNotifier:
     # ---- 전송 ----
     def _send_once(self, text: str, link: Optional[str], button: str) -> None:
         # 버튼은 [제품 링크 관리 > 웹 도메인]에 등록된 도메인일 때만 보이므로, 본문에도 주소를 넣어 둔다
-        if link:
-            text = f"{text}\n{link}"
-        template = {"object_type": "text", "text": text[:200],
+        # 텍스트 템플릿은 200자 제한 → 본문을 줄여서라도 링크는 끝까지 남긴다
+        text = f"{text[:200 - len(link) - 1]}\n{link}" if link else text[:200]
+        template = {"object_type": "text", "text": text,
                     "link": {"web_url": link or "", "mobile_web_url": link or ""}}
         if link:
             template["button_title"] = button
