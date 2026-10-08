@@ -58,3 +58,15 @@ python watcher.py
 - 두 사람은 카톡 친구여야 하고, 받는 사람 프로필이 비공개면 목록에 안 나옵니다.
 - 권한 오류 시: 앱 멤버로 받는 사람 초대, 또는 비즈 앱 전환이 필요할 수 있습니다.
 - `receiver_uuids` 를 비우면 다시 '나에게 보내기'로 동작합니다.
+
+## 클라우드 실행 (GitHub Actions, PC 꺼도 동작)
+- `.github/workflows/watch.yml` 이 5분마다(`*/5`) `watcher.py --cron --state-dir state` 를 실행합니다. 실제 실행은 GitHub 사정으로 몇 분~수십 분 늦어질 수 있습니다.
+- 비밀값: 저장소 Secrets 의 `CONFIG_JSON`(= config.json), `KAKAO_TOKEN_JSON`(= 보내는 사람 kakao_token.json)
+  ```
+  gh secret set CONFIG_JSON < config.json
+  gh secret set KAKAO_TOKEN_JSON < kakao_token.json
+  ```
+- 실행 간 상태(state.json, 갱신된 토큰)는 Actions 캐시로 이어받습니다.
+- 수동 실행: `gh workflow run watch.yml` / 기록: 저장소 Actions 탭
+- **끄기**: `gh workflow disable watch.yml` (감시 기한이 지나면 종료 알림 후 아무것도 하지 않지만, 끝나면 꺼 두세요)
+- PC 실행(`python watcher.py`)과 동시에 돌리면 알림이 중복되니 하나만 쓰세요.
