@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "2-59/5 * * * *"   # 정각 혼잡 회피. GitHub 사정으로 늦어지거나 건너뛸 수 있어 외부 크론(workflow_dispatch)으로도 깨운다
   workflow_dispatch:
+    inputs:
+      simulate_open:
+        description: "결원 발생을 가정하고 [테스트] 알림만 보내기 (감시 상태는 건드리지 않음)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read             # GITHUB_TOKEN 은 읽기 전용
@@ -31,10 +36,15 @@ jobs:
         env:
           CONFIG_JSON: ${{ secrets.CONFIG_JSON }}
           KAKAO_TOKEN_JSON: ${{ secrets.KAKAO_TOKEN_JSON }}
+          SIMULATE_OPEN: ${{ inputs.simulate_open }}   # schedule / cron-job.org 호출에서는 비어 있거나 false
         run: |
           printf '%s' "$CONFIG_JSON" > config.json
           printf '%s' "$KAKAO_TOKEN_JSON" > "$RUNNER_TEMP/kakao_token.json"
-          python3 watcher.py --cron --state-dir state --token-file "$RUNNER_TEMP/kakao_token.json"
+          if [ "$SIMULATE_OPEN" = "true" ]; then
+            python3 watcher.py --simulate-open --token-file "$RUNNER_TEMP/kakao_token.json"
+          else
+            python3 watcher.py --cron --state-dir state --token-file "$RUNNER_TEMP/kakao_token.json"
+          fi
 
       - uses: actions/cache/save@v4
         if: always()
