@@ -2,8 +2,11 @@ name: kfsi-seat-watcher
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # GitHub 사정에 따라 실제 실행은 늦어질 수 있음
+    - cron: "2-59/5 * * * *"   # 정각 혼잡 회피. GitHub 사정으로 늦어지거나 건너뛸 수 있어 외부 크론(workflow_dispatch)으로도 깨운다
   workflow_dispatch:
+
+permissions:
+  contents: read             # GITHUB_TOKEN 은 읽기 전용
 
 concurrency:
   group: kfsi-seat-watcher   # 실행이 겹쳐 중복 알림이 가지 않도록
@@ -17,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 직전 실행의 state.json / 갱신된 카카오 토큰을 이어받는다
+      # 직전 실행의 state.json(알림 상태)만 이어받는다. 토큰은 캐시에 두지 않는다
       - uses: actions/cache/restore@v4
         with:
           path: state
@@ -30,9 +33,8 @@ jobs:
           KAKAO_TOKEN_JSON: ${{ secrets.KAKAO_TOKEN_JSON }}
         run: |
           printf '%s' "$CONFIG_JSON" > config.json
-          mkdir -p state
-          [ -f state/kakao_token.json ] || printf '%s' "$KAKAO_TOKEN_JSON" > state/kakao_token.json
-          python3 watcher.py --cron --state-dir state
+          printf '%s' "$KAKAO_TOKEN_JSON" > "$RUNNER_TEMP/kakao_token.json"
+          python3 watcher.py --cron --state-dir state --token-file "$RUNNER_TEMP/kakao_token.json"
 
       - uses: actions/cache/save@v4
         if: always()

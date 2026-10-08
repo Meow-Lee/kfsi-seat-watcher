@@ -212,14 +212,18 @@ def main() -> None:
     g.add_argument("--simulate-open", action="store_true")
     g.add_argument("--cron", action="store_true")
     parser.add_argument("--state-dir", help="state.json / kakao_token.json / watcher.log 위치")
+    parser.add_argument("--token-file", help="카카오 토큰 파일 위치 (state-dir 보다 우선)")
     args = parser.parse_args()
 
+    global STATE_PATH, TOKEN_PATH, LOG_PATH
     if args.state_dir:
-        global STATE_PATH, TOKEN_PATH, LOG_PATH
         state_dir = Path(args.state_dir)
         state_dir.mkdir(parents=True, exist_ok=True)
         STATE_PATH, TOKEN_PATH, LOG_PATH = (state_dir / "state.json", state_dir / "kakao_token.json",
                                             state_dir / "watcher.log")
+    if args.token_file:
+        # Actions 에서는 토큰을 캐시 대상(state-dir) 밖에 둬서 캐시에 남지 않게 한다
+        TOKEN_PATH = Path(args.token_file)
 
     if not CONFIG_PATH.exists():
         raise SystemExit("config.json 이 없습니다. config.example.json 을 복사해 값을 채우세요.")
